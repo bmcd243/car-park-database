@@ -5,6 +5,7 @@ import sys
 import time
 import tkinter.font as tkFont
 from PIL import ImageTk, Image
+import sqlite3
 
 root = Tk()
 root.geometry("1000x800")
@@ -73,7 +74,32 @@ def display():
 	confirm_button.grid(row=6, column=1)
 
 def to_database(profession, make, model, colour, reg):
-	print("")
+
+	# define connection and cursor
+
+	connection = sqlite3.connect('collyers_car_park.db')
+
+	cursor = connection.cursor()
+
+	# create stores table
+
+	teachers = """CREATE TABLE IF NOT EXISTS
+	teachers(teacher_id TEXT PRIMARY KEY, make TEXT, model TEXT, colour TEXT, reg TEXT)"""
+
+	cursor.execute(teachers)
+
+	# add to teachers
+
+	id = "001"
+
+	cursor.execute("INSERT INTO teachers (teacher_id, make, model, colour, reg) VALUES (?, ?, ?, ?, ?)", (id, make, model, colour, reg))
+
+	cursor.execute("SELECT * FROM teachers")
+
+	results = cursor.fetchall()
+	print(results)
+
+	print("we are here")
 
 
 
