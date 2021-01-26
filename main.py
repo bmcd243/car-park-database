@@ -109,7 +109,13 @@ def booking():
 	visitor_tab = ttk.Frame(name_store)
 	student_tab = ttk.Frame(name_store)
 
-	name_store.add(staff_tab,)
+	name_store.add(staff_tab, text='Staff')
+	name_store.add(visitor_tab, text='Visitor')
+	name_store.add(student_tab, text='Student')
+
+	name_store.pack(expand=True, fill='both')
+
+	staff_listbox = Listbox
 
 
 	# create calendar
