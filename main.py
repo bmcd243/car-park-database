@@ -25,7 +25,7 @@ root.title("Collyer's Car Park")
 
 # fetching dates
 current_date = datetime.datetime.now()
-current_today = current_date.strftime("%A")
+current_today = current_date.strftime("%w")
 current_month = current_date.strftime("%m")
 current_year = current_date.strftime("%Y")
 full_date = datetime.date.today()
@@ -41,7 +41,7 @@ def restart():
 # 	photo.image = image_1
 # 	photo.grid(row=6, column=4, sticky=E, pady=2)
 
-def start_database():
+def create_database():
 	# define connection and cursor
 
 	connection = sqlite3.connect('collyers_car_park.db')
@@ -50,7 +50,7 @@ def start_database():
 
 	# create details table
 	details_table = """CREATE TABLE IF NOT EXISTS
-	register(
+	details(
 	user_id INTEGER PRIMARY KEY,
 	first_name TEXT,
 	surname TEXT,
@@ -60,50 +60,172 @@ def start_database():
 	colour TEXT,
 	reg TEXT)"""
 
+
 	# create booking table
 	booking_table = """CREATE TABLE IF NOT EXISTS
 	booking(
-		booking_id INTEGER PRIMARY KEY,
-		FOREIGN KEY (user_id)
-		REFERENCES details_table(booking_id)
-		start_date TEXT,
-		expiry_date TEXT)"""
-
-	# create tables
+	booking_id INTEGER PRIMARY KEY,
+	user_id INTEGER,
+	start_date TEXT,
+	expiry_date TEXT,
+	FOREIGN KEY (user_id) REFERENCES details(user_id))"""
+	
 	cursor.execute(details_table)
 	cursor.execute(booking_table)
 
-	# add default values to table
+	# add default values to details table
 
 	details_default_values = [
-		('1','Bob','Smith','Staff','Lamborgini','Aventador', 'Red', 'RE05 KDJ'),
-		('2','Sarah','McDonald','Staff','Ferrari','LaFerrari', 'Yellow', 'TY07 PER'),
-		('3','Will','Stevenson','Student','Bugatti','Veyron', 'Green', 'RE62 LKD'),
-		('4','Steve','Swimswam','Student','Renault','Clio', 'Pink', 'RE66 KPO'),
-		('5','Harry','Reeto','Visitor','VW','Up!', 'Blue', 'RZ05 FSD'),
+		(1,'Bob','Smith','Staff','Lamborgini','Aventador', 'Red', 'RE05 KDJ'),
+		(2,'Sarah','McDonald','Staff','Ferrari','LaFerrari', 'Yellow', 'TY07 PER'),
+		(3,'Will','Stevenson','Student','Bugatti','Veyron', 'Green', 'RE62 LKD'),
+		(4,'Steve','Swimswam','Student','Renault','Clio', 'Pink', 'RE66 KPO'),
+		(5,'Harry','Reeto','Visitor','VW','Up!', 'Blue', 'RZ05 FSD'),
 	]
 
-	cursor.execute("INSERT INTO details_table (user_id, first_name, surname, role, make, model, colour, reg) VALUES (?, ?, ?, ?, ?, ?, ?, ?)", details_default_values)
+	cursor.executemany("INSERT INTO details (user_id, first_name, surname, role, make, model, colour, reg) VALUES (?, ?, ?, ?, ?, ?, ?, ?)", details_default_values)
+	connection.commit()
+
+	# add default values to booking table
 
 	booking_default_values = [
-		('1', '1', full_date, '2021-01-24'),
-		('2', '2', full_date, '2021-01-23'),
-		('3', '3', full_date, '2021-01-22')
+		(1, 1, '2021-01-24', '2021-01-24'),
+		(2, 2, '2021-01-24', '2021-01-23'),
+		(3, 3, '2021-01-24', '2021-01-22'),
 
 	]
 
-	cursor.execute("INSERT INTO booking_table (booking_id, user_id, start_date TEXT, expiry_date TEXT) VALUES (?, ?, ?, ?)", booking_default_values)
+	cursor.executemany("INSERT INTO booking (booking_id, user_id, start_date, expiry_date) VALUES (?, ?, ?, ?)", booking_default_values)
+	connection.commit()
 
 
+	print("Default values successfully inserted")
 
 	connection.close()
 
 
 
-def booking():
-	booking_frame.pack()
 
-	name_store = ttk.Notebook(booking_frame, width=1000, height=600)
+
+
+def booking():
+
+	### STAFF
+
+	def fetch_staff_names():
+		connection = sqlite3.connect('collyers_car_park.db')
+		cursor = connection.cursor()
+
+		select_all_staff = ("""SELECT * from details where role='Staff'""")
+		cursor.execute(select_all_staff)
+
+		rows = cursor.fetchall()
+
+		staff_list = []
+
+		for row in rows:
+			print(row)
+			staff_list.append(row)
+		print(staff_list)
+		
+		display_staff_names(staff_list)
+
+	def display_staff_names(staff_list):
+		# combining first and last names
+		staff_full_name_list = []
+		for i in range(len(staff_list)):
+			staff_full_name = staff_list[i][1] + " " + staff_list[i][2]
+			staff_full_name_list.append(staff_full_name)
+
+
+		# filling listbox with staff names
+		for i in range(len(staff_list)):
+			staff_listbox.insert(END, staff_full_name_list[i])
+
+		staff_listbox.config(yscrollcommand = staff_scroll.set)
+
+		staff_scroll.config(command = staff_listbox.yview)
+
+	### STUDENTS
+
+	def fetch_student_names():
+		connection = sqlite3.connect('collyers_car_park.db')
+		cursor = connection.cursor()
+
+		select_all_students = ("""SELECT * from details where role='Student'""")
+		cursor.execute(select_all_students)
+
+		rows = cursor.fetchall()
+
+		student_list = []
+
+		for row in rows:
+			print(row)
+			student_list.append(row)
+		print(student_list)
+		
+		display_student_names(student_list)
+
+	def display_student_names(student_list):
+		# combining first and last names
+		student_full_name_list = []
+		for i in range(len(student_list)):
+			student_full_name = student_list[i][1] + " " + student_list[i][2]
+			student_full_name_list.append(student_full_name)
+
+
+		# filling listbox with staff names
+		for i in range(len(student_list)):
+			student_listbox.insert(END, student_full_name_list[i])
+
+		student_listbox.config(yscrollcommand = student_scroll.set)
+
+		student_scroll.config(command = student_listbox.yview)
+
+
+	### VISITORS
+
+	def fetch_visitor_names():
+		connection = sqlite3.connect('collyers_car_park.db')
+		cursor = connection.cursor()
+
+		select_all_visitors = ("""SELECT * from details where role='Visitor'""")
+		cursor.execute(select_all_visitors)
+
+		rows = cursor.fetchall()
+
+		visitor_list = []
+
+		for row in rows:
+			print(row)
+			visitor_list.append(row)
+		print(visitor_list)
+		
+		display_visitor_names(visitor_list)
+
+	def display_visitor_names(visitor_list):
+		# combining first and last names
+		visitor_full_name_list = []
+		for i in range(len(visitor_list)):
+			visitor_full_name = visitor_list[i][1] + " " + visitor_list[i][2]
+			visitor_full_name_list.append(visitor_full_name)
+
+
+		# filling listbox with staff names
+		for i in range(len(visitor_list)):
+			visitor_listbox.insert(END, visitor_full_name_list[i])
+
+		visitor_listbox.config(yscrollcommand = visitor_scroll.set)
+
+		visitor_scroll.config(command = visitor_listbox.yview)
+
+
+
+	
+	booking_frame.grid()
+
+
+	name_store = ttk.Notebook(booking_frame, width=1000, height=400)
 
 	staff_tab = ttk.Frame(name_store)
 	visitor_tab = ttk.Frame(name_store)
@@ -113,21 +235,32 @@ def booking():
 	name_store.add(visitor_tab, text='Visitor')
 	name_store.add(student_tab, text='Student')
 
-	name_store.pack(expand=True, fill='both')
+	name_store.grid()
 
-	staff_listbox = Listbox
+	staff_listbox = Listbox(staff_tab, width=600, height=400)
+	staff_listbox.grid()
+	staff_scroll = Scrollbar(staff_listbox)
 
+	student_listbox = Listbox(student_tab, width=600, height=400)
+	student_listbox.grid()
+	student_scroll = Scrollbar(student_listbox)
+
+	visitor_listbox = Listbox(visitor_tab, width=600, height=400)
+	visitor_listbox.grid()
+	visitor_scroll = Scrollbar(visitor_listbox)
 
 	# create calendar
-	cal = Calendar(booking_frame, selectmode="day", year=current_year, month=current_month, day=current_today)
+	cal = Calendar(booking_frame, selectmode="day", year=int(current_year), month=int(current_month), day=int(current_today))
 	cal.grid()
 
-
-
-
-
+	# create confirm button
 	confirm_button = ttk.Button(booking_frame, text="Book car", command= to_database)
 	confirm_button.grid(row=6, column=1)
+
+	fetch_staff_names()
+	fetch_student_names()
+	fetch_visitor_names()
+
 
 
 
@@ -150,10 +283,10 @@ def to_database(profession, make, model, colour, reg):
 
 
 def register():
-	register_frame.pack()
+	register_frame.grid()
 	
 	welcome = Label(root, text="New user - enter your details below to use the Collyer's car park.")
-	welcome.pack()
+	welcome.grid()
 
 	# entry text
 	first_name = Label(register_frame, text="First name")
@@ -164,12 +297,13 @@ def register():
 	colour_text = Label(register_frame, text="Colour")
 	reg_text = Label(register_frame, text="Reg number")
 
-
 	select_text.grid(row = 1, column = 0, sticky = W, pady = 2)
-	make_text.grid(row = 2, column = 0, sticky = W, pady = 2)
-	model_text.grid(row = 3, column = 0, sticky = W, pady = 2)
-	colour_text.grid(row = 4, column = 0, sticky = W, pady = 2)
-	reg_text.grid(row = 5, column = 0, sticky = W, pady = 2)
+	first_name.grid(row = 2, column = 0, sticky = W, pady = 2)
+	surname.grid(row = 3, column = 0, sticky = W, pady = 2)
+	make_text.grid(row = 4, column = 0, sticky = W, pady = 2)
+	model_text.grid(row = 5, column = 0, sticky = W, pady = 2)
+	colour_text.grid(row = 6, column = 0, sticky = W, pady = 2)
+	reg_text.grid(row = 7, column = 0, sticky = W, pady = 2)
 
 
 	# entry fields
@@ -184,19 +318,45 @@ def register():
 	dropdown = OptionMenu(register_frame, variable, *dropdown_options)
 	dropdown.grid(row=1, column=1, pady=2)
 
+	first_name_entry = Entry(register_frame)
+	first_name_entry.grid(row=2, column=1, pady=2)
+
+	last_name_entry = Entry(register_frame)
+	last_name_entry.grid(row=3, column=1, pady=2)
+
 	make_entry = Entry(register_frame)
-	make_entry.grid(row=2, column=1, pady=2)
+	make_entry.grid(row=4, column=1, pady=2)
 
 	model_entry = Entry(register_frame)
-	model_entry.grid(row=3, column=1)
+	model_entry.grid(row=5, column=1)
 
 	colour_entry = Entry(register_frame)
-	colour_entry.grid(row=4, column=1)
+	colour_entry.grid(row=6, column=1)
 
 	reg_entry = Entry(register_frame)
-	reg_entry.grid(row=5, column=1)
+	reg_entry.grid(row=7, column=1)
 
 	#TODO - create user button, triggers userID creation
+
+	def create_id():
+		print("")
+	
+		def fetch_latest_id():
+			connection = sqlite3.connect('collyers_car_park.db')
+			cursor = connection.cursor()
+			latest_id = cursor.execute("""SELECT * 
+			FROM    car_park
+			WHERE   ID = (SELECT MAX(ID)  FROM car_park""")
+			connection.close()
+			print(latest_id)
+			
+		
+		fetch_latest_id()
+
+
+
+	register_button = ttk.Button(register_frame, text='Register',command=create_id)
+	register_button.grid(row=8, column=1)
 
 
 
@@ -224,6 +384,8 @@ menu_1.add_command(label="Restart Program", command=restart)
 
 # photo_display()
 
+# create_database()
+
 
 root.mainloop()
 
@@ -231,10 +393,7 @@ root.mainloop()
 
 
 
-# def fetch_latest_id():
-# 	cursor.execute(SELECT * 
-# 		FROM    car_park
-# 		WHERE   ID = (SELECT MAX(ID)  FROM car_park);
+
 
 
 # def create_id(profession, latest_id):
