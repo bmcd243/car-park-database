@@ -110,6 +110,8 @@ def create_database():
 
 def booking():
 
+	calendar_frame = Frame(booking_frame)
+
 	### STAFF
 
 	def fetch_staff_names():
@@ -130,6 +132,8 @@ def booking():
 		
 		display_staff_names(staff_list)
 
+		connection.close()
+
 	def display_staff_names(staff_list):
 		# combining first and last names
 		staff_full_name_list = []
@@ -145,6 +149,8 @@ def booking():
 		staff_listbox.config(yscrollcommand = staff_scroll.set)
 
 		staff_scroll.config(command = staff_listbox.yview)
+
+
 
 	### STUDENTS
 
@@ -166,6 +172,8 @@ def booking():
 		
 		display_student_names(student_list)
 
+		connection.close()
+
 	def display_student_names(student_list):
 		# combining first and last names
 		student_full_name_list = []
@@ -181,6 +189,7 @@ def booking():
 		student_listbox.config(yscrollcommand = student_scroll.set)
 
 		student_scroll.config(command = student_listbox.yview)
+
 
 
 	### VISITORS
@@ -203,6 +212,8 @@ def booking():
 		
 		display_visitor_names(visitor_list)
 
+		connection.close()
+
 	def display_visitor_names(visitor_list):
 		# combining first and last names
 		visitor_full_name_list = []
@@ -220,7 +231,6 @@ def booking():
 		visitor_scroll.config(command = visitor_listbox.yview)
 
 
-
 	
 	booking_frame.grid()
 
@@ -235,31 +245,77 @@ def booking():
 	name_store.add(visitor_tab, text='Visitor')
 	name_store.add(student_tab, text='Student')
 
-	name_store.grid()
+	name_store.grid(row=0,column=0)
 
-	staff_listbox = Listbox(staff_tab, width=600, height=400)
+	staff_listbox = Listbox(staff_tab, selectmode=SINGLE, width=600, height=400)
 	staff_listbox.grid()
 	staff_scroll = Scrollbar(staff_listbox)
 
-	student_listbox = Listbox(student_tab, width=600, height=400)
+	student_listbox = Listbox(student_tab, selectmode=SINGLE, width=600, height=400)
 	student_listbox.grid()
 	student_scroll = Scrollbar(student_listbox)
 
-	visitor_listbox = Listbox(visitor_tab, width=600, height=400)
+	visitor_listbox = Listbox(visitor_tab, selectmode=SINGLE, width=600, height=400)
 	visitor_listbox.grid()
 	visitor_scroll = Scrollbar(visitor_listbox)
-
-	# create calendar
-	cal = Calendar(booking_frame, selectmode="day", year=int(current_year), month=int(current_month), day=int(current_today))
-	cal.grid()
-
-	# create confirm button
-	confirm_button = ttk.Button(booking_frame, text="Book car", command= to_database)
-	confirm_button.grid(row=6, column=1)
 
 	fetch_staff_names()
 	fetch_student_names()
 	fetch_visitor_names()
+
+	i_am_a = Label(booking_frame, text="I am a")
+	i_am_a.grid(row=1,column=0)
+
+	dropdown_options = [
+		"Staff",
+		"Student",
+		"Visitor"
+	]
+	variable = StringVar(booking_frame)
+	variable.set(dropdown_options[0])
+
+	dropdown = OptionMenu(booking_frame, variable, *dropdown_options)
+	dropdown.grid(row=2, column=0, pady=2)
+
+	select_profession = ttk.Button(booking_frame, text="CONFIRM ROLE")
+	select_profession.grid(row=3, column=0)
+
+	if variable == "Staff":
+		chosen_name = staff_listbox.get(ACTIVE)
+	elif variable == "Student":
+		chosen_name = student_listbox.get(ACTIVE)
+	else:
+		chosen_name = visitor_listbox.get(ACTIVE)
+
+	
+
+	select_name = ttk.Button(booking_frame, text="Select name", command = lambda: display_calendar(chosen_name))
+	select_name.grid(row=1, column=0, sticky = W, pady = 2)
+
+	# Fetch details for calendar
+
+	def display_calendar(selected_name):
+		calendar_frame.tkraise()
+
+		calendar_instruction = Label(booking_frame, text = "Hi" + selected_name + "Please select a date from the calendar below:")
+		calendar_instruction.grid(row=0,column=0)
+
+		# create calendar
+		cal = Calendar(booking_frame, selectmode="day", year=int(current_year), month=int(current_month), day=int(current_today))
+		cal.grid(row=1,column=0)
+
+		def fetch_date():
+			selected_date = cal.get_date()
+			print(selected_date)
+
+
+		book_button = ttk.Button(booking_frame, commmand = lambda: fetch_date())
+		book_button.grid(row=3,column=0)
+
+
+
+
+
 
 
 
@@ -388,21 +444,3 @@ menu_1.add_command(label="Restart Program", command=restart)
 
 
 root.mainloop()
-
-
-
-
-
-
-
-
-# def create_id(profession, latest_id):
-# 	if profession == "Student":
-# 		id = "stu" + latest_id
-# 	if profession == "Staff":
-# 		id = "sta" + latest_id
-# 	if profession == "Visitor":
-# 		id = "vis" + latest_id
-
-# fetch_latest_id()
-# create_id()
