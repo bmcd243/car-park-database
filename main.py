@@ -54,6 +54,7 @@ class tkinterApp(Tk):
 		main_menu.add_command(label="Register as new user", command=lambda: self.show_frame(register_frame))
 
 		Tk.config(self, menu=menu_bar)
+		chosen_name = ""
 
 		for F in (welcome_frame, booking_frame, register_frame, calendar_frame):
 			frame = F(container, self, chosen_name)
@@ -68,8 +69,8 @@ class tkinterApp(Tk):
 
 
 class welcome_frame(Frame):
-	def __init__(self, parent, controller):
-		Frame.__init__(self, parent)
+	def __init__(self, parent, controller, chosen_name):
+		Frame.__init__(self, parent, chosen_name)
 
 		# self = Frame(self, width=1000, height=800)
 		# self.grid()
@@ -81,7 +82,7 @@ class register_frame(Frame):
 
 	def __init__(self, parent, controller):
 
-		Frame.__init__(self, parent)
+		Frame.__init__(self, parent, chosen_name)
 
 		welcome = Label(self, text="New user - enter your details below to use the Collyer's car park.")
 		welcome.grid()
@@ -223,11 +224,8 @@ def create_database():
 
 
 class booking_frame(Frame):
-	global chosen_name
-	def __init__(self, parent, controller):
-		Frame.__init__(self, parent)
-		global chosen_name
-		
+	def __init__(self, parent, controller, chosen_name):
+		Frame.__init__(self, parent, chosen_name)
 
 	### STAFF
 
@@ -394,6 +392,7 @@ class booking_frame(Frame):
 		select_profession.grid(row=3, column=0)
 
 		def confirm_role():
+			global chosen_name
 			if variable == "Staff":
 				chosen_name = staff_listbox.get(ACTIVE)
 			elif variable == "Student":
@@ -401,7 +400,7 @@ class booking_frame(Frame):
 			else:
 				chosen_name = visitor_listbox.get(ACTIVE)
 
-			controller.show_frame(calendar_frame, chosen_name)
+			controller.show_frame(calendar_frame)
 			
 
 
@@ -411,9 +410,9 @@ class booking_frame(Frame):
 
 		# Fetch details for calendar
 
-class calendar_frame(Frame):
+class calendar_frame(booking_frame):
 	def __init__(self, parent, controller, chosen_name):
-		Frame.__init__(self, parent)
+		Frame.__init__(self, parent, chosen_name)
 
 		def calendar_display():
 
