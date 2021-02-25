@@ -54,10 +54,9 @@ class tkinterApp(Tk):
 		main_menu.add_command(label="Register as new user", command=lambda: self.show_frame(register_frame))
 
 		Tk.config(self, menu=menu_bar)
-		chosen_name = ""
 
-		for F in (welcome_frame, booking_frame, register_frame, calendar_frame):
-			frame = F(container, self, chosen_name)
+		for F in (welcome_frame, booking_frame, register_frame, calendar_frame, calendar_frame_2, confirmation_frame):
+			frame = F(container, self)
 			self.frames[F] = frame
 			frame.grid(row = 0, column = 0, sticky = "nsew")
 
@@ -69,8 +68,8 @@ class tkinterApp(Tk):
 
 
 class welcome_frame(Frame):
-	def __init__(self, parent, controller, chosen_name):
-		Frame.__init__(self, parent, chosen_name)
+	def __init__(self, parent, controller):
+		Frame.__init__(self, parent)
 
 		# self = Frame(self, width=1000, height=800)
 		# self.grid()
@@ -82,7 +81,7 @@ class register_frame(Frame):
 
 	def __init__(self, parent, controller):
 
-		Frame.__init__(self, parent, chosen_name)
+		Frame.__init__(self, parent)
 
 		welcome = Label(self, text="New user - enter your details below to use the Collyer's car park.")
 		welcome.grid()
@@ -224,8 +223,9 @@ def create_database():
 
 
 class booking_frame(Frame):
-	def __init__(self, parent, controller, chosen_name):
-		Frame.__init__(self, parent, chosen_name)
+	def __init__(self, parent, controller):
+		Frame.__init__(self, parent)
+		
 
 	### STAFF
 
@@ -374,7 +374,7 @@ class booking_frame(Frame):
 		fetch_student_names()
 		fetch_visitor_names()
 
-		i_am_a = Label(self, text="I am a")
+		i_am_a = Label(self, text="Select your name from the list above and confirm your role: ")
 		i_am_a.grid(row=1,column=0)
 
 		dropdown_options = [
@@ -388,38 +388,74 @@ class booking_frame(Frame):
 		dropdown = OptionMenu(self, variable, *dropdown_options)
 		dropdown.grid(row=2, column=0, pady=2)
 
-		select_profession = ttk.Button(self, text="CONFIRM ROLE")
-		select_profession.grid(row=3, column=0)
+		# select_profession = ttk.Button(self, text="CONFIRM ROLE")
+		# select_profession.grid(row=3, column=0)
+
+		self.chosen_name = ''
 
 		def confirm_role():
-			global chosen_name
-			if variable == "Staff":
-				chosen_name = staff_listbox.get(ACTIVE)
-			elif variable == "Student":
-				chosen_name = student_listbox.get(ACTIVE)
+			chosen_role = variable.get()
+			print(chosen_role)
+			if chosen_role == "Staff":
+				self.chosen_name = staff_listbox.get(ACTIVE)
+			elif chosen_role == "Student":
+				self.chosen_name = student_listbox.get(ACTIVE)
 			else:
-				chosen_name = visitor_listbox.get(ACTIVE)
+				self.chosen_name = visitor_listbox.get(ACTIVE)
+
+			print("role confirmed, name is " + self.chosen_name)
+			
 
 			controller.show_frame(calendar_frame)
 			
 
 
-		select_name = ttk.Button(self, text="Select name", command=lambda: confirm_role)
+		select_name = ttk.Button(self, text="Select name", command=confirm_role)
 		select_name.grid(row=4, column=0, pady = 2)
 
 
 		# Fetch details for calendar
 
-class calendar_frame(booking_frame):
-	def __init__(self, parent, controller, chosen_name):
-		Frame.__init__(self, parent, chosen_name)
+class calendar_frame(Frame):
+	def __init__(self, parent, controller):
+		Frame.__init__(self, parent)
 
 		def calendar_display():
+
+			print("LOOK, " + controller.frames[booking_frame].chosen_name)
 
 			go_back = Button(self, text="<--", command=lambda: controller.show_frame(booking_frame))
 			go_back.grid(column=0, row=0, sticky = NW)
 
-			calendar_instruction = Label(self, text = "Hi " + chosen_name + ", please select a date from the calendar below:")
+			calendar_instruction = Label(self, text = "Hi " + controller.frames[booking_frame].chosen_name + ", please select a start date:")
+			calendar_instruction.grid(row=1,column=1)
+
+			# create calendar
+			cal = Calendar(self, selectmode="day", year=int(current_year), month=int(current_month), day=int(current_today))
+			cal.grid(row=2,column=1)
+
+			self.selected_date = ''
+
+			def fetch_date():
+				self.selected_date = cal.get_date()
+				print(self.selected_date)
+				controller.show_frame(calendar_frame_2)
+
+			book_button = ttk.Button(self, text='Confirm date', command=fetch_date)
+			book_button.grid(row=3,column=0)
+
+		calendar_display()
+
+class calendar_frame_2(Frame):
+	def __init__(self, parent, controller):
+		Frame.__init__(self, parent)
+
+		def calendar_display():
+
+			go_back = Button(self, text="<--", command=lambda: controller.show_frame(calendar_frame))
+			go_back.grid(column=0, row=0, sticky = NW)
+
+			calendar_instruction = Label(self, text = controller.frames[booking_frame].chosen_name + ", you will be booked in from" + controller.frames[calendar_frame].selected_date + ". Please select an expiry date:")
 			calendar_instruction.grid(row=1,column=1)
 
 			# create calendar
@@ -430,11 +466,22 @@ class calendar_frame(booking_frame):
 				selected_date = cal.get_date()
 				print(selected_date)
 
+			book_button = ttk.Button(self, text='Confirm date', command=fetch_date)
+			book_button.grid(row=3,column=0)
+
 		calendar_display()
 
+class confirmation_frame(Frame):
+	def __init__(self, parent, controller):
+		Frame.__init__(self, parent)
 
-		# book_button = ttk.Button(self, commmand=lambda: fetch_date())
-		# book_button.grid(row=3,column=0)
+		go_back = Button(self, text="<--", command=lambda: controller.show_frame(calendar_frame_2))
+		go_back.grid(column=0, row=0, sticky = NW)
+
+
+
+
+
 
 # photo_display()
 
