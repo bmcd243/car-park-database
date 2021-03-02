@@ -82,7 +82,7 @@ class welcome_frame(Frame):
 		photo_display()
 
 
-		welcome = Label(self, text="Hello, please use the menu above to navigate the interface")
+		welcome = Label(self, text="Hello, plaese use the above menu bar to navigate around the interface. If you are new round here then you should register first and then make your first booking. If you are already registered then you can go and make a new booking straight away.")
 		welcome.grid(row=0, column=4, padx=10, pady=10)
 
 class register_frame(Frame):
@@ -150,14 +150,44 @@ class register_frame(Frame):
 			def fetch_latest_id():
 				connection = sqlite3.connect('collyers_car_park.db')
 				cursor = connection.cursor()
-				latest_id = cursor.execute("""SELECT * 
-				FROM    car_park
-				WHERE   ID = (SELECT MAX(ID)  FROM car_park""")
-				connection.close()
-				print(latest_id)
+
+				latest_id = cursor.execute("""SELECT MAX(user_id) FROM details""")
+				connection.commit()
+
+				confirmed = latest_id.fetchall()
+				print(confirmed)
+
+				for item in confirmed:
+					latest_id_final = (item[0])
 				
+				new_id = latest_id_final + 1
+				print(new_id)
+
+				into_database(new_id)
 			
 			fetch_latest_id()
+		
+		def into_database(user_id):
+			connection = sqlite3.connect('collyers_car_park.db')
+
+			cursor = connection.cursor()
+
+			role = variable.get()
+			first_name = first_name_entry.get()
+			surname = last_name_entry.get()
+			make = make_entry.get()
+			model = model_entry.get()
+			colour = colour_entry.get()
+			reg = reg_entry.get()
+
+			cursor.execute("INSERT INTO details (user_id, first_name, surname, role, make, model, colour, reg) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+			(user_id, first_name, surname, role, make, model, colour, reg))
+			connection.commit()
+
+			connection.close()
+
+			success = Label(self, text="Hooray, " + first_name + ", you have now been registered onto the system - you can now go ahead and make a booking.")
+			success.grid(row=9, column=1)
 
 
 

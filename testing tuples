@@ -1,0 +1,4 @@
+tuple_list = [(555555,)]
+
+for item in tuple_list:
+    print(item[0]) # --> 5
